@@ -15,7 +15,7 @@ spec:
       serviceAccountName: job-lease-keeper
       containers:
        - name: job-lease-keeper
-         image: kubesailmaker/job-lease-keeper:0.4
+         image: kubesailmaker/job-lease-keeper:0.7
          command:
          - "/job-lease-keeper"
          imagePullPolicy: IfNotPresent
