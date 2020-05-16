@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: busybox-3
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      name: busybox-3
+      labels:
+        app: busybox-3
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+    spec:
+      containers:
+        - name: busybox
+          image: busybox
+          command:
+            - "/bin/sh"
+            - "-c"
+            - "exit 1"
+      restartPolicy: Never
+

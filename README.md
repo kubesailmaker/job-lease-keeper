@@ -19,6 +19,8 @@ The following environment variables can be configured:
 |Environment|Description|
 |-----------|-----------|
 |JOBS_NAMESPACE |namespace to clean jobs from|
-|JOBS_COMPLETION_THRESHOLD_MINUTES|minimum number of minutes to wait before cleaning a finished job |
+|JOB_SUCCESS_THRESHOLD_MINUTES|minimum number of minutes to wait before cleaning a job that finished successfully |
+|JOB_FAILURE_THRESHOLD_MINUTES|minimum number of minutes to wait before cleaning a job that failed |
 |CHECK_FREQUENCY_MINUTES |frequency at which the check should be performed |
+
 
