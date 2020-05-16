@@ -26,12 +26,6 @@ func assumeServiceAccountAccess() (*rest.Config, error) {
 	return rest.InClusterConfig()
 }
 
-func insideKube() bool {
-	apiServerHost := os.Getenv("KUBERNETES_SERVICE_HOST")
-	apiServerPort := os.Getenv("KUBERNETES_SERVICE_PORT")
-	return len(apiServerHost) > 0 && len(apiServerPort) > 0
-}
-
 var clientSet *kubernetes.Clientset
 var mut = sync.Mutex{}
 
@@ -45,13 +39,12 @@ func GetClient() *kubernetes.Clientset {
 
 func initialize() {
 	mut.Lock()
-	defer 	mut.Unlock()
+	defer mut.Unlock()
 
 	var cfg *rest.Config
 	var err error
-	if insideKube() {
-		cfg, err = assumeServiceAccountAccess()
-	} else {
+	cfg, err = assumeServiceAccountAccess()
+	if err != nil {
 		cfg, err = loadFromKubeConfig()
 	}
 
@@ -67,4 +60,3 @@ func initialize() {
 		clientSet = cset
 	}
 }
-
