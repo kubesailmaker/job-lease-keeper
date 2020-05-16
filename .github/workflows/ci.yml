@@ -2,7 +2,7 @@ name: CI
 
 on:
   schedule:
-    - cron:  '*/10 * * * *'
+    - cron:  '0 */1 * * *'
 
 jobs:
   build:
@@ -20,10 +20,6 @@ jobs:
       run: |
         git config user.email "github-actions@github.com"
         git config user.name "Git Bot"
-        now=$(date "+%Y-%m-%dT%H:%M:%S%z")
-        echo Git Action Time: $now >> .trigger
-        git add .trigger
-        git commit -m"build trigger: $now"
         git remote add fork git@github.com:kube-sailmaker/job-lease-keeper.git
         git fetch fork --tags
         git push origin --tags
