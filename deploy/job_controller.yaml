@@ -16,7 +16,7 @@ spec:
       containers:
        - name: job-lease-keeper
           # Replace this with the built image name
-          image: kubesailmaker/job-lease-keeper:0.1
+          image: kubesailmaker/job-lease-keeper:0.4
           command:
             - job-lease-keeper
           imagePullPolicy: IfNotPresent
