@@ -25,6 +25,6 @@ jobs:
         git add .trigger
         git commit -m"build trigger: $now"
         git remote add fork git@github.com:kube-sailmaker/job-lease-keeper.git
-        git fetch fork --all --tags
+        git fetch fork --tags
         git push origin --tags
         
