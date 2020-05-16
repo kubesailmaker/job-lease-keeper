@@ -45,15 +45,15 @@ func initialize() {
 	var err error
 	cfg, err = assumeServiceAccountAccess()
 	if err != nil {
+		log.Println("kubernetes service account error", err)
 		cfg, err = loadFromKubeConfig()
 	}
-
 	if err != nil {
 		panic(err.Error())
 	}
-
 	cset, cerr := kubernetes.NewForConfig(cfg)
 	if cerr != nil {
+		log.Println("error initialising kubernetes config", cerr)
 		panic(cerr.Error())
 	}
 	if clientSet == nil {

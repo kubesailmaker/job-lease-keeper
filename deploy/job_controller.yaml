@@ -15,7 +15,7 @@ spec:
       serviceAccountName: job-lease-keeper
       containers:
        - name: job-lease-keeper
-         image: kubesailmaker/job-lease-keeper:0.8
+         image: kubesailmaker/job-lease-keeper:0.9
          command:
          - "/job-lease-keeper"
          imagePullPolicy: IfNotPresent
@@ -34,4 +34,8 @@ spec:
            value: "120"
          - name: CHECK_FREQUENCY_MINUTES
            value: "30"
+         - name: KUBERNETES_SERVICE_HOST
+           value: "kubernetes.default.svc"
+         - name: KUBERNETES_SERVICE_PORT
+           value: "443"
 

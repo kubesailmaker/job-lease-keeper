@@ -4,20 +4,20 @@ import (
 	"context"
 	"fmt"
 	"github.com/kube-sailmaker/job-lease-keeper/k8s/client"
+	"github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"strconv"
 	"time"
-	"github.com/sirupsen/logrus"
 )
 
 type JobResult struct {
-	Total int
+	Total          int
 	SuccessfulJobs int
-	FailedJobs int
+	FailedJobs     int
 
 	Deleted int
-	Error int
+	Error   int
 
 	Status string
 }
@@ -56,6 +56,8 @@ func main() {
 		time.AfterFunc(frequency, func() {
 			progress := make(chan JobResult)
 			go cleanupJob(namespace, successThreshold, failureThreshold, progress)
+			result := <-progress
+			logger.WithField("task", "job-cleanup-summary").Info(result)
 		})
 	}
 }
@@ -77,12 +79,11 @@ func getIntFromEnv(envName string, defaultValue int) int {
 
 func cleanupJob(namespace string, successThreshold int, failureThreshold int, output chan JobResult) {
 	k8s := client.GetClient()
-	jList, jErr := k8s.BatchV1().Jobs(namespace).List(context.TODO(), v1.ListOptions{
-	})
+	jList, jErr := k8s.BatchV1().Jobs(namespace).List(context.TODO(), v1.ListOptions{})
 	if jErr != nil {
 		logger.Error("error", jErr)
 		output <- JobResult{
-		  Status: "error",
+			Status: "error",
 		}
 		close(output)
 	}
@@ -96,6 +97,9 @@ func cleanupJob(namespace string, successThreshold int, failureThreshold int, ou
 		if item.Status.Active == 0 && item.Status.Succeeded > 0 || item.Status.Failed > 0 {
 			succeedCount = succeedCount + 1
 			completionTime := item.Status.CompletionTime
+			if completionTime == nil {
+				completionTime = item.Status.StartTime
+			}
 			duration := now.Sub(completionTime.Time).Minutes()
 			jobStatus := item.Status.String()
 			fields := map[string]interface{}{
@@ -109,7 +113,7 @@ func cleanupJob(namespace string, successThreshold int, failureThreshold int, ou
 			successfulJobStatus := item.Status.Succeeded > 0 && float64(successThreshold) < duration
 			failureJobStatus := item.Status.Failed > 0 && float64(failureThreshold) < duration
 
-			if  successfulJobStatus || failureJobStatus {
+			if successfulJobStatus || failureJobStatus {
 				err := k8s.BatchV1().Jobs(namespace).Delete(context.TODO(), item.Name, v1.DeleteOptions{})
 				resultLog := logger.WithFields(fields).WithField("action", "clean")
 				if err != nil {
@@ -127,11 +131,11 @@ func cleanupJob(namespace string, successThreshold int, failureThreshold int, ou
 		}
 	}
 	output <- JobResult{
-		Status: "successful",
+		Status:         "successful",
 		SuccessfulJobs: succeedCount,
-		Total: total,
-		Deleted: deleted,
-		FailedJobs: failed,
-		Error: errorCount,
+		Total:          total,
+		Deleted:        deleted,
+		FailedJobs:     failed,
+		Error:          errorCount,
 	}
 }
