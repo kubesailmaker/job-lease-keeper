@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: job-lease-keeper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: job-lease-keeper
+  template:
+    metadata:
+      labels:
+        name: job-lease-keeper
+    spec:
+      serviceAccountName: job-lease-keeper
+      containers:
+       - name: job-lease-keeper
+          # Replace this with the built image name
+          image: kubesailmaker/job-lease-keeper:0.1
+          command:
+            - job-lease-keeper
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CONTROLLER_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: JOBS_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: JOBS_COMPLETION_THRESHOLD_MINUTES
+              value: 120
+            - name: CHECK_FREQUENCY_MINUTES
+              value: 30
+
