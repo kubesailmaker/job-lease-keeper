@@ -19,5 +19,12 @@ spec:
             - "/bin/sh"
             - "-c"
             - "sleep 40"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 10m
+              memory: 16Mi
       restartPolicy: Never
 

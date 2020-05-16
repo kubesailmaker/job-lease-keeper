@@ -114,7 +114,10 @@ func cleanupJob(namespace string, successThreshold int, failureThreshold int, ou
 			failureJobStatus := item.Status.Failed > 0 && float64(failureThreshold) < duration
 
 			if successfulJobStatus || failureJobStatus {
-				err := k8s.BatchV1().Jobs(namespace).Delete(context.TODO(), item.Name, v1.DeleteOptions{})
+				propagationPolicy := v1.DeletePropagationBackground
+				err := k8s.BatchV1().Jobs(namespace).Delete(context.TODO(), item.Name, v1.DeleteOptions{
+					PropagationPolicy: &propagationPolicy,
+				})
 				resultLog := logger.WithFields(fields).WithField("action", "clean")
 				if err != nil {
 					resultLog.
