@@ -51,15 +51,15 @@ func main() {
 		"task":      "job-cleanup",
 		"frequency": fmt.Sprintf("%d minutes", frequency),
 	})
-	done := make(chan JobResult)
-	go cleanupJob(namespace, successThreshold, failureThreshold, done)
+	cleanJobFunc := func() {
+		progress := make(chan JobResult)
+		go cleanupJob(namespace, successThreshold, failureThreshold, progress)
+		result := <-progress
+		logger.WithField("task", "job-cleanup-summary").Info(result)
+	}
+	cleanJobFunc()
 	for {
-		time.AfterFunc(frequency, func() {
-			progress := make(chan JobResult)
-			go cleanupJob(namespace, successThreshold, failureThreshold, progress)
-			result := <-progress
-			logger.WithField("task", "job-cleanup-summary").Info(result)
-		})
+		time.AfterFunc(frequency, cleanJobFunc)
 	}
 }
 
@@ -80,8 +80,9 @@ func getIntFromEnv(envName string, defaultValue int) int {
 
 func cleanupJob(namespace string, successThreshold int, failureThreshold int, output chan JobResult) {
 	k8s := client.GetClient()
-	jList, jErr := k8s.BatchV1().Jobs(namespace).List(context.TODO(), v1.ListOptions{
-		Limit: 10,
+	jobInterface := k8s.BatchV1().Jobs(namespace)
+	jList, jErr := jobInterface.List(context.TODO(), v1.ListOptions{
+		Limit:          10,
 		TimeoutSeconds: &timeout,
 	})
 	if jErr != nil {
@@ -119,7 +120,7 @@ func cleanupJob(namespace string, successThreshold int, failureThreshold int, ou
 
 			if successfulJobStatus || failureJobStatus {
 				propagationPolicy := v1.DeletePropagationBackground
-				err := k8s.BatchV1().Jobs(namespace).Delete(context.TODO(), item.Name, v1.DeleteOptions{
+				err := jobInterface.Delete(context.TODO(), item.Name, v1.DeleteOptions{
 					PropagationPolicy: &propagationPolicy,
 				})
 				resultLog := logger.WithFields(fields).WithField("action", "clean")
