@@ -15,7 +15,7 @@ spec:
       serviceAccountName: job-lease-keeper
       containers:
        - name: job-lease-keeper
-         image: kubesailmaker/job-lease-keeper:0.9
+         image: kubesailmaker/job-lease-keeper:0.9.3
          command:
          - "/job-lease-keeper"
          imagePullPolicy: IfNotPresent
@@ -29,19 +29,19 @@ spec:
              fieldRef:
                fieldPath: metadata.namespace
          - name: JOBS_SUCCESS_THRESHOLD_MINUTES
-           value: "60"
+           value: "10"
          - name: JOBS_FAILURE_THRESHOLD_MINUTES
-           value: "120"
+           value: "20"
          - name: CHECK_FREQUENCY_MINUTES
-           value: "30"
+           value: "5"
          - name: KUBERNETES_SERVICE_HOST
            value: "kubernetes.default.svc"
          - name: KUBERNETES_SERVICE_PORT
            value: "443"
          resources:
            requests:
-             cpu: 20m
-             memory: 128Mi
+             cpu: 50m
+             memory: 256Mi
            limits:
-             cpu: 20m
-             memory: 128Mi
+             cpu: 50m
+             memory: 256Mi

@@ -23,6 +23,7 @@ type JobResult struct {
 }
 
 var logger = logrus.New()
+var timeout = int64(20)
 
 func main() {
 	logger.SetFormatter(&logrus.JSONFormatter{
@@ -79,7 +80,10 @@ func getIntFromEnv(envName string, defaultValue int) int {
 
 func cleanupJob(namespace string, successThreshold int, failureThreshold int, output chan JobResult) {
 	k8s := client.GetClient()
-	jList, jErr := k8s.BatchV1().Jobs(namespace).List(context.TODO(), v1.ListOptions{})
+	jList, jErr := k8s.BatchV1().Jobs(namespace).List(context.TODO(), v1.ListOptions{
+		Limit: 10,
+		TimeoutSeconds: &timeout,
+	})
 	if jErr != nil {
 		logger.Error("error", jErr)
 		output <- JobResult{
@@ -141,4 +145,5 @@ func cleanupJob(namespace string, successThreshold int, failureThreshold int, ou
 		FailedJobs:     failed,
 		Error:          errorCount,
 	}
+	close(output)
 }

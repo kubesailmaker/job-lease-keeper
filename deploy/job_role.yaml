@@ -4,15 +4,15 @@ metadata:
   creationTimestamp: null
   name: job-lease-keeper
 rules:
-  - apiGroups:
-      - v1
-    resources:
-      - pods
-    verbs:
-      - delete
-      - get
-      - list
-      - watch
+#  - apiGroups:
+#      - v1
+#    resources:
+#      - pods
+#    verbs:
+#      - delete
+#      - get
+#      - list
+#      - watch
   - apiGroups:
       - batch
     resources:

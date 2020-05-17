@@ -6,10 +6,10 @@ Job Lease Keeper to cleanup after configurable time
 ### Deploying Job Lease Keeper
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/kube-sailmaker/job-lease-keeper/0.8/deploy/job_controller.yaml
-kubectl apply -f https://raw.githubusercontent.com/kube-sailmaker/job-lease-keeper/0.8/deploy/job_role.yaml
-kubectl apply -f https://raw.githubusercontent.com/kube-sailmaker/job-lease-keeper/0.8/deploy/job_sa.yaml
-kubectl apply -f https://raw.githubusercontent.com/kube-sailmaker/job-lease-keeper/0.8/deploy/job_role_binding.yaml
+kubectl apply -f https://raw.githubusercontent.com/kube-sailmaker/job-lease-keeper/0.9.3/deploy/job_controller.yaml
+kubectl apply -f https://raw.githubusercontent.com/kube-sailmaker/job-lease-keeper/0.9.3/deploy/job_role.yaml
+kubectl apply -f https://raw.githubusercontent.com/kube-sailmaker/job-lease-keeper/0.9.3/deploy/job_sa.yaml
+kubectl apply -f https://raw.githubusercontent.com/kube-sailmaker/job-lease-keeper/0.9.3/deploy/job_role_binding.yaml
 ```
 
 ### Configuration
