@@ -12,24 +12,24 @@ import (
 )
 
 type JobResult struct {
-	Total          int
-	SuccessfulJobs int
-	FailedJobs     int
+	Total          int `json:"total"`
+	SuccessfulJobs int `json:"successful-jobs"`
+	FailedJobs     int `json:"failed-jobs"`
 
-	Deleted int
-	Error   int
+	Deleted int `json:"delete-count"`
+	Error   int `json:"error-count"`
 
-	Status string
+	Status string `json:"status"`
 }
 
-func(jr *JobResult) toMap()map[string]interface{} {
+func (jr *JobResult) toMap() map[string]interface{} {
 	return map[string]interface{}{
-		"total": jr.Total,
+		"total":           jr.Total,
 		"successful_jobs": jr.SuccessfulJobs,
-		"failed_jobs": jr.FailedJobs,
-		"deleted": jr.Deleted,
-		"error": jr.Error,
-		"status": jr.Status,
+		"failed_jobs":     jr.FailedJobs,
+		"deleted":         jr.Deleted,
+		"error":           jr.Error,
+		"status":          jr.Status,
 	}
 }
 
@@ -117,18 +117,19 @@ func cleanupJob(namespace string, successThreshold int, failureThreshold int) Jo
 				completionTime = item.Status.StartTime
 			}
 			duration := now.Sub(completionTime.Time).Minutes()
-			jobStatus := item.Status.String()
 			fields := map[string]interface{}{
 				"task":      "job-cleanup",
 				"name":      item.Name,
-				"status":    jobStatus,
 				"completed": fmt.Sprintf("%f minutes ago", duration),
 			}
 			logger.WithFields(fields).Info("check job status")
 
 			successfulJobStatus := item.Status.Succeeded > 0 && float64(successThreshold) < duration
 			failureJobStatus := item.Status.Failed > 0 && float64(failureThreshold) < duration
-
+			jobStatus := "SUCCESSFUL"
+			if failureJobStatus {
+				jobStatus = "FAILED"
+			}
 			if successfulJobStatus || failureJobStatus {
 				propagationPolicy := v1.DeletePropagationBackground
 				err := jobInterface.Delete(context.TODO(), item.Name, v1.DeleteOptions{
