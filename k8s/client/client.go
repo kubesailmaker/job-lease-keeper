@@ -15,7 +15,7 @@ import (
 func loadFromKubeConfig() (*rest.Config, error) {
 	log.Println("Attempt to load from config")
 	var kubeConfigPath *string
-	kubeConfigPath = flag.String("kubeconfig", filepath.Join(os.Getenv("HOME"), "wkube", "config"), "kube config file")
+	kubeConfigPath = flag.String("kubeconfig", filepath.Join(os.Getenv("HOME"), ".kube", "config"), "kube config file")
 	flag.Parse()
 	restCfg, restErr := clientcmd.BuildConfigFromFlags("", *kubeConfigPath)
 	return restCfg, restErr

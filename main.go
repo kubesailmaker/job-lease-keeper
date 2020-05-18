@@ -32,8 +32,8 @@ func main() {
 
 	namespace := os.Getenv("JOBS_NAMESPACE")
 	if namespace == "" {
-		logger.WithField("task", "job-cleanup").Error("provide namespace using JOBS_NAMESPACE")
-		os.Exit(1)
+		logger.WithField("task", "job-cleanup").Error("using default namespace")
+		namespace = "default"
 	}
 
 	successThreshold := getIntFromEnv("JOBS_SUCCESS_THRESHOLD_MINUTES", 60)
@@ -52,9 +52,7 @@ func main() {
 		"frequency": fmt.Sprintf("%d minutes", frequency),
 	})
 	cleanJobFunc := func() {
-		progress := make(chan JobResult)
-		go cleanupJob(namespace, successThreshold, failureThreshold, progress)
-		result := <-progress
+		result := cleanupJob(namespace, successThreshold, failureThreshold)
 		logger.WithField("task", "job-cleanup-summary").Info(result)
 	}
 	cleanJobFunc()
@@ -74,23 +72,26 @@ func getIntFromEnv(envName string, defaultValue int) int {
 		} else {
 			value = tValue
 		}
+	} else {
+		value = defaultValue
 	}
 	return value
 }
 
-func cleanupJob(namespace string, successThreshold int, failureThreshold int, output chan JobResult) {
+func cleanupJob(namespace string, successThreshold int, failureThreshold int) JobResult {
 	k8s := client.GetClient()
 	jobInterface := k8s.BatchV1().Jobs(namespace)
 	jList, jErr := jobInterface.List(context.TODO(), v1.ListOptions{
 		Limit:          10,
 		TimeoutSeconds: &timeout,
 	})
+	var output JobResult
 	if jErr != nil {
 		logger.Error("error", jErr)
-		output <- JobResult{
+		output = JobResult{
 			Status: "error",
 		}
-		close(output)
+		return output
 	}
 	total := len(jList.Items)
 	now := time.Now()
@@ -138,7 +139,7 @@ func cleanupJob(namespace string, successThreshold int, failureThreshold int, ou
 			}
 		}
 	}
-	output <- JobResult{
+	return JobResult{
 		Status:         "successful",
 		SuccessfulJobs: succeedCount,
 		Total:          total,
@@ -146,5 +147,4 @@ func cleanupJob(namespace string, successThreshold int, failureThreshold int, ou
 		FailedJobs:     failed,
 		Error:          errorCount,
 	}
-	close(output)
 }
