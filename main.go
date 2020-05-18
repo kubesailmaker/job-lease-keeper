@@ -51,13 +51,12 @@ func main() {
 		"task":      "job-cleanup",
 		"frequency": fmt.Sprintf("%d minutes", frequency),
 	})
-	cleanJobFunc := func() {
+
+	for {
 		result := cleanupJob(namespace, successThreshold, failureThreshold)
 		logger.WithField("task", "job-cleanup-summary").Info(result)
-	}
-	cleanJobFunc()
-	for {
-		time.AfterFunc(frequency, cleanJobFunc)
+		logger.WithField("next-cycle-minutes", frequency.Minutes()).Info("wait for next cycle")
+		time.Sleep(frequency)
 	}
 }
 
