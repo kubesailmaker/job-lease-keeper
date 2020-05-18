@@ -22,6 +22,17 @@ type JobResult struct {
 	Status string
 }
 
+func(jr *JobResult) toMap()map[string]interface{} {
+	return map[string]interface{}{
+		"total": jr.Total,
+		"successful_jobs": jr.SuccessfulJobs,
+		"failed_jobs": jr.FailedJobs,
+		"deleted": jr.Deleted,
+		"error": jr.Error,
+		"status": jr.Status,
+	}
+}
+
 var logger = logrus.New()
 var timeout = int64(20)
 
@@ -54,8 +65,8 @@ func main() {
 
 	for {
 		result := cleanupJob(namespace, successThreshold, failureThreshold)
-		logger.WithField("task", "job-cleanup-summary").Info(result)
-		logger.WithField("next-cycle-minutes", frequency.Minutes()).Info("wait for next cycle")
+		logger.WithField("task", "job-cleanup-summary").WithFields(result.toMap()).
+			Info(fmt.Sprintf("next cycle in %.0f minutes", frequency.Minutes()))
 		time.Sleep(frequency)
 	}
 }
