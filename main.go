@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/kube-sailmaker/job-lease-keeper/k8s/client"
+	"github.com/kube-sailmaker/k8s-client/client"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
