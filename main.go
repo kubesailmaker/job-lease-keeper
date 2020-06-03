@@ -8,6 +8,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -51,10 +52,16 @@ func main() {
 	delayFrequency := getIntFromEnv("CHECK_FREQUENCY_MINUTES", 30)
 	failureThreshold := getIntFromEnv("JOBS_FAILURE_THRESHOLD_MINUTES", 120)
 
+	namespaces := make([]string, 0)
+	for _, ns := range strings.Split(namespace, ",") {
+		namespaces = append(namespaces, ns)
+	}
+
 	logger.WithField("task", "job-cleanup").
 		WithField("job_cleanup_threshold", fmt.Sprintf("%d minutes", successThreshold)).
 		WithField("check_frequency", fmt.Sprintf("%d minutes", delayFrequency)).
 		WithField("namespace", namespace).
+		WithField("namespace_count", len(namespaces)).
 		Info("configuration")
 
 	frequency := time.Duration(delayFrequency) * time.Minute
@@ -64,9 +71,13 @@ func main() {
 	})
 
 	for {
-		result := cleanupJob(namespace, successThreshold, failureThreshold)
-		logger.WithField("task", "job-cleanup-summary").WithFields(result.toMap()).
-			Info(fmt.Sprintf("next cycle in %.0f minutes", frequency.Minutes()))
+		for _, ns := range namespaces {
+			result := cleanupJob(ns, successThreshold, failureThreshold)
+			logger.WithField("task", "job-cleanup-summary").
+				WithField("namespace", ns).
+				WithFields(result.toMap()).
+				Info(fmt.Sprintf("next cycle in %.0f minutes", frequency.Minutes()))
+		}
 		time.Sleep(frequency)
 	}
 }
